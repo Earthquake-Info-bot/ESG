@@ -2,12 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="icon.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b1b1b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ESG">
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>t2[ESG]ETライブ原稿生成システム</title>
+<title>t3[ESG]ETライブ原稿生成システム</title>
 <style>
 *{
   box-sizing:border-box;
@@ -364,15 +367,23 @@ html,body{
           min="1"
           value="5"
           style="width:100%;">
-
       </div>
 
-      <button id="fullscreenBtn"
-        class="control-btn"
-        onclick="toggleFullscreen()"
-        style="width:100%;height:52px;font-size:20px;">
-        フルスクリーン
-      </button>
+      <div style="
+        margin-top:20px;
+        padding:14px;
+        border-radius:10px;
+        background:#383838;
+        color:#ddd;
+        font-size:14px;
+        line-height:1.6;
+      ">
+        <div style="font-size:17px;font-weight:bold;margin-bottom:6px;">
+          📱 PWA（ホーム画面追加）のおすすめ
+        </div>
+        フルスクリーン機能は、端末によって正常に動作しない場合があるため削除しました。<br>
+        快適に利用するには、このページをホーム画面に追加してご利用ください。
+      </div>
 
     </div>
   </div>
@@ -536,17 +547,6 @@ function updateFetchInput(){
   input.disabled = !enabled;
   input.style.opacity = enabled ? "1" : "0.45";
   input.style.cursor = enabled ? "text" : "not-allowed";
-}
-
-function toggleFullscreen(){
-  const btn = document.getElementById("fullscreenBtn");
-  if(!document.fullscreenElement){
-    document.documentElement.requestFullscreen();
-    btn.textContent = "フルスクリーンを解除する";
-  }else{
-    document.exitFullscreen();
-    btn.textContent = "フルスクリーンにする";
-  }
 }
 
 /* 緊急地震速報（警報） */
