@@ -2,15 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="icon.png" type="image/png">
-<link rel="manifest" href="manifest.json">
+<link rel="icon" href="https://earthquake-info-bot.github.io/ESG/icon.png" type="image/png">
+<link rel="manifest" href="https://earthquake-info-bot.github.io/ESG/manifest.json">
 <meta name="theme-color" content="#1b1b1b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ESG">
-<link rel="apple-touch-icon" href="icon.png">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>t4[ESG]ETライブ原稿生成システム</title>
+<link rel="apple-touch-icon" href="https://earthquake-info-bot.github.io/ESG/icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>t5[ESG]ETライブ原稿生成システム</title>
 <style>
 *{
   box-sizing:border-box;
@@ -28,7 +28,8 @@ html,body{
 .app{
   display:flex;
   width:100%;
-  height:var(--app-height);
+  height:100vh;   /* ←これ追加 */
+  min-height:0;
 }
 /* メイン */
 .main{
@@ -36,6 +37,7 @@ html,body{
   display:flex;
   flex-direction:column;
   min-width:0;
+  min-height:0; /* ←これ追加 */
 }
 /* 上部 */
 .header{
@@ -140,6 +142,7 @@ html,body{
   background:#202020;
   font-size:22px;
   line-height:1.8;
+  min-height:0;   /* ←これも必須 */
   font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic",sans-serif;
 }
 /* 下部 */
@@ -160,6 +163,7 @@ html,body{
   background:#2c1f25;
   border-left:2px solid #444;
   padding:10px;
+  min-height:0;   /* ←これ追加 */
 }
 /* サイドバーボタン */
 .menu-btn{
@@ -239,6 +243,68 @@ html,body{
   font-size:18px;
   color:#ccc;
 }
+.toast{
+  position: fixed;
+  left: 14px;
+  bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: white;
+  background: rgba(0,0,0,0.8);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: 0.2s;
+  z-index: 9999;
+  pointer-events: none;
+}
+.toast.show{
+  opacity: 1;
+  transform: translateY(0);
+}
+#toastText{
+  white-space: pre-wrap;
+}
+#toastCopyBtn{
+  margin-left: auto;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+#toastCopyBtn:active{
+  transform: scale(0.95);
+}
+.yellow-box {
+  border: 2px solid #ff0;
+  background: rgba(255, 235, 0, 0.08);
+  padding: 10px;
+  border-radius: 8px;
+}
+.marker-red {
+  background: #ff0000;
+  color: #fff;
+  font-family: "Yu Gothic","BIZ UDPGothic",sans-serif;
+  font-size: 40px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  
+  /* マーカーっぽさの核心 */
+  padding: 6px 6px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+body.loading {
+  cursor: wait;
+}
 </style>
 </head>
 <body>
@@ -282,36 +348,33 @@ html,body{
     </div>
     <!-- 下部 -->
     <div class="footer" id="footer">
-      接続状態：-
+      接続状態: -
     </div>
   </div>
   <!-- サイドバー -->
   <div class="sidebar">
-    <button class="menu-btn active" onclick="selectMenu(this, 'eew_warning')">
+    <button class="menu-btn active" data-mode="eew_warning" onclick="selectMenu(this, 'eew_warning')">
       EEW警報
     </button>
-    <button class="menu-btn" onclick="selectMenu(this, 'eew_forecast')">
+    <button class="menu-btn" data-mode="eew_forecast" onclick="selectMenu(this, 'eew_forecast')">
       EEW(Wolfx)
     </button>
-    <button class="menu-btn" onclick="selectMenu(this, 'latest_quake')">
+    <button class="menu-btn" data-mode="latest_quake" onclick="selectMenu(this, 'latest_quake')">
       最新の地震
     </button>
-    <button class="menu-btn" onclick="selectMenu(this, 'history_quake')">
+    <button class="menu-btn" data-mode="history_quake" onclick="selectMenu(this, 'history_quake')">
       過去の地震
     </button>
-    <button class="menu-btn" onclick="selectMenu(this, 'tsunami_area')">
-      津波対象地域
+    <button class="menu-btn" data-mode="tsunami_arrival" onclick="selectMenu(this, 'tsunami_arrival')">
+      津波到達予想
     </button>
-    <button class="menu-btn" onclick="selectMenu(this, 'tsunami_arrival')">
-      津波到達
-    </button>
-    <button class="menu-btn" onclick="selectMenu(this, 'tsunami_obs')">
+    <button class="menu-btn" data-mode="tsunami_obs" onclick="selectMenu(this, 'tsunami_obs')">
       津波観測
     </button>
-    <button class="menu-btn" onclick="selectMenu(this, 'jalert')">
+    <button class="menu-btn" data-mode="jalert" onclick="selectMenu(this, 'jalert')">
       国民保護
     </button>
-    <button class="menu-btn" onclick="selectMenu(this, 'admin')">
+    <button class="menu-btn" data-mode="admin" onclick="selectMenu(this, 'admin')">
       管理者原稿
     </button>
   </div>
@@ -340,17 +403,9 @@ html,body{
           class="control-select"
           style="width:100%;"
           onchange="updateFetchInput()">
-          <option value="ws">WebSocket</option>
           <option value="fetch">fetch</option>
           <option value="manual">手動（非推奨）</option>
         </select>
-        <div style="margin-top:8px;font-size:12px;color:#aaa;line-height:1.4;">
-          【WebSocket】リアルタイム更新に最適（環境によっては正常に動作しないことがあります）<br>
-          【fetch】タブをよく切り替える場合にも安定<br>
-          【手動】自動での更新は一切しません<br>
-          ・WebSocketに対応していない項目では、自動的にfetchへ切り替わります。<br>
-          ・「管理者指定の原稿」は手動更新のみ利用できます。
-        </div>
 
       </div>
 
@@ -365,8 +420,21 @@ html,body{
           class="control-input"
           type="number"
           min="1"
-          value="5"
+          value="3"
           style="width:100%;">
+      </div>
+
+      <div style="margin-bottom:22px;">
+
+        <div style="font-size:20px;font-weight:bold;margin-bottom:8px;">
+          自動タブ切替
+        </div>
+
+        <label style="display:flex;align-items:center;gap:10px;font-size:16px;">
+          <input type="checkbox" id="autoTabSwitch">
+          緊急地震速報（警報）初報や津波情報発表時に自動でタブを切り替える
+        </label>
+
       </div>
 
       <div style="
@@ -390,6 +458,12 @@ html,body{
 </div>
 <!-- 時計 -->
 <script>
+const isAppTest = false;
+
+let fetchInterval = 3;
+let updateMethod = "fetch";
+let timer;
+let isGenerating = false;
 function updateTime(){
   const now = new Date();
   const week = ['日','月','火','水','木','金','土'];
@@ -407,190 +481,571 @@ setInterval(updateTime, 1000);
 updateTime();
 </script>
 <script>
-function updateHeight() {
-  document.documentElement.style.setProperty(
-    "--app-height",
-    window.innerHeight + "px"
-  );
+function showMessage(text, bgColor="#3498db", textColor="#fff", sec=5){
+  const el = document.getElementById("toast");
+  const txt = document.getElementById("toastText");
+  txt.textContent = text;
+  el.dataset.text = text; // コピー用
+  el.style.background = bgColor;
+  el.style.color = textColor;
+  el.classList.add("show");
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => {
+    el.classList.remove("show");
+  }, sec * 1000);
 }
-updateHeight();
-window.addEventListener("resize", updateHeight);
-window.addEventListener("orientationchange", updateHeight);
+
+if (isAppTest) {
+  alert("製作・テスト中です。\n実際のデータは表示していません。");
+  showMessage("テストデータを表示しています。", "#3498db", "#fff", 5);
+}
 </script>
 <!-- メイン -->
 <script>
 let currentMode = 'eew_warning';
+let lastEEWEventId = null;
+let lastTsunamiEventId = null;
+let autoTabSwitch = true;
+let isLoading = false;
+
+function setLoading(state, text = "読み込み中...") {
+  isLoading = state;
+
+  // 画面表示
+  if (state) {
+    setScript(text);
+    document.body.classList.add("loading");
+  } else {
+    document.body.classList.remove("loading");
+  }
+
+  // サイドバー操作禁止
+  document.querySelectorAll(".menu-btn").forEach(btn => {
+    btn.disabled = state;
+    btn.style.pointerEvents = state ? "none" : "auto";
+    btn.style.opacity = state ? "0.5" : "1";
+  });
+}
+
+async function safeFetch(url){
+  try{
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`HTTP${res.status}`);
+    }
+    return res;
+  } catch (err) {
+    showMessage(
+      `[通信エラー]\n${err}`,
+      "#e74c3c",
+      "#fff",
+      5
+    );
+    throw err;
+  }
+}
+
+const footerMessage = {
+  fetch: "",
+  ws: ""
+};
+
 /* タイトル */
 const titles = {
   eew_warning: "緊急地震速報（警報）",
   eew_forecast: "緊急地震速報（WolfxAPI）",
   latest_quake: "最新の地震",
   history_quake: "過去の地震",
-  tsunami_area: "津波の対象地域",
   tsunami_arrival: "津波到達予想",
   tsunami_obs: "津波観測情報",
   jalert: "国民保護情報",
   admin: "管理者設定の原稿"
 };
 
+let url_loadEEWWarning = null;
+let url_loadEEWForecast = null;
+let url_loadLatestQuake = null;
+let url_loadhistoryQuake = null;
+let url_loadTsunamiArrival_p2p = null;
+let url_loadTsunamiArrival_jma = null;
+let url_loadTsunamiobs = null;
+let url_loadJAlert = null;
+let url_loadAdmin = null;
+let url_ws = null;
+if (isAppTest) {
+  // テストデータ
+  url_loadEEWWarning = "https://api-v2-sandbox.p2pquake.net/v2/history?codes=556&limit=1";
+  url_loadEEWForecast = "https://api.wolfx.jp/jma_eew.json";
+  //url_loadEEWForecast = "https://script.google.com/macros/s/AKfycbzgP8R7vowRFrefHbUIkAcGt4NFjJZcuVnnpVqIjpprlCA44PtTk7ffHs-f4HP8Yk8A/exec";
+  url_loadLatestQuake = "https://api-v2-sandbox.p2pquake.net/v2/history?codes=551&limit=1";
+  url_loadhistoryQuake = "https://api.p2pquake.net/v2/jma/quake?limit=60&quake_type=DetailScale";
+  url_loadTsunamiArrival_p2p = "https://api-v2-sandbox.p2pquake.net/v2/history?codes=552&limit=1";
+  url_loadTsunamiArrival_jma = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
+  url_loadTsunamiobs = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
+  url_loadJAlert = null;//APIなし
+  url_loadAdmin = "https://script.google.com/macros/s/AKfycbwSgpbpVHoZffj8P7C3maNYtpeNFPuq6BR2oYnxp8m7CPjsj0HId10U0ocrKgu51EMk/exec";
+  url_ws = "wss://api-realtime-sandbox.p2pquake.net/v2/ws";
+} else {
+  // 実際のデータ
+  url_loadEEWWarning = "https://api.p2pquake.net/v2/history?codes=556&limit=1";
+  url_loadEEWForecast = "https://api.wolfx.jp/jma_eew.json";
+  url_loadLatestQuake = "https://api.p2pquake.net/v2/history?codes=551&limit=1";
+  url_loadhistoryQuake = "https://api.p2pquake.net/v2/jma/quake?limit=60&quake_type=DetailScale";
+  url_loadTsunamiArrival_p2p = "https://api.p2pquake.net/v2/history?codes=552&limit=1";
+  url_loadTsunamiArrival_jma = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
+  url_loadTsunamiobs = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
+  url_loadJAlert = null;//APIなし
+  url_loadAdmin = "https://script.google.com/macros/s/AKfycbwSgpbpVHoZffj8P7C3maNYtpeNFPuq6BR2oYnxp8m7CPjsj0HId10U0ocrKgu51EMk/exec";
+  url_ws = "wss://api.p2pquake.net/v2/ws";
+}
+
+function runCurrentMode(isManual = false){
+  switch(currentMode){
+    case "eew_warning":
+      if (isManual || !(ws && ws.readyState === WebSocket.OPEN)) {
+        loadEEWWarning();
+      } else {
+        setFooter(`<span style="color:#aaaaaa">●</span>接続なし（WebSocket接続中）`,`<span style="color:#00e676">●</span>正常(P2P)／接続確認 ${formatDateTimeWithMs()}`);
+      }
+      break;
+    case 'eew_forecast': loadEEWForecast(); break;
+    case 'latest_quake': loadLatestQuake(); break;
+    case 'history_quake': loadHistoryQuake(); break;
+    case 'tsunami_arrival': loadTsunamiArrival(); break;
+    case 'tsunami_obs': loadTsunamiObs(); break;
+    case 'jalert': loadJAlert(); break;
+    case 'admin': loadAdmin(); break;
+  }
+}
 /* モード別UI */
 const headerControls = {
   eew_warning: ``,
   eew_forecast: ``,
-  big_quake: ``,
-  shindo: ``,
-  quake: ``,
+  latest_quake: ``,
+  history_quake: ``,
   tsunami_area: ``,
   tsunami_arrival: ``,
   tsunami_obs: ``,
   jalert: ``,
   admin: ``
 };
-
 /* 原稿変更 */
 function setScript(html){
-  document.getElementById('script').innerHTML = html;
+  document.getElementById('script').innerHTML = html.replaceAll("\n","<br>");
 }
-
+function setFooter(fetch,ws) {
+  if (fetch !== null) footerMessage.fetch = fetch;
+  if (ws !== null) footerMessage.ws = ws;
+  document.getElementById("footer").innerHTML =
+    `接続状態: 【fetch】${footerMessage.fetch || "-"}　【ws】${footerMessage.ws || "-"}`;
+}
 /* 手動更新 */
 function manualUpdate(){
-  switch(currentMode){
-    case 'eew_warning':
-      loadEEWWarning();
-      break;
-    case 'eew_forecast':
-      loadEEWForecast();
-      break;
-    case 'latest_quake':
-      loadLatestQuake();
-      break;
-    case 'history_quake':
-      loadHistoryQuake();
-      break;
-    case 'tsunami_area':
-      loadTsunamiArea();
-      break;
-    case 'tsunami_arrival':
-      loadTsunamiArrival();
-      break;
-    case 'tsunami_obs':
-      loadTsunamiObs();
-      break;
-    case 'jalert':
-      loadJAlert();
-      break;
-    case 'admin':
-      loadAdmin();
-      break;
-  }
+  runCurrentMode(true);
 }
-
 /* メニュー変更 */
 function selectMenu(button, key){
   currentMode = key;
   /* active解除 */
-  document.querySelectorAll('.menu-btn')
-    .forEach(btn=>{
-
-      btn.classList.remove('active');
-    });
-
+  document.querySelectorAll('.menu-btn').forEach(btn=>{
+    btn.classList.remove('active');
+  });
   /* active追加 */
   button.classList.add('active');
-
   /* タイトル */
-  document.getElementById('title').textContent =
-    titles[key] || '-';
-
+  document.getElementById('title').textContent = titles[key] || '-';
   /* 上部UI */
-  document.getElementById('headerControls')
-    .innerHTML =
-      headerControls[key] || '';
-
+  document.getElementById('headerControls').innerHTML = headerControls[key] || '';
   /* 原稿 */
   /* モード実行 */
-  switch(key){
-    case 'eew_warning':
-      loadEEWWarning();
-      break;
-    case 'eew_forecast':
-      loadEEWForecast();
-      break;
-    case 'latest_quake':
-      loadLatestQuake();
-      break;
-    case 'history_quake':
-      loadHistoryQuake();
-      break;
-    case 'tsunami_area':
-      loadTsunamiArea();
-      break;
-    case 'tsunami_arrival':
-      loadTsunamiArrival();
-      break;
-    case 'tsunami_obs':
-      loadTsunamiObs();
-      break;
-    case 'jalert':
-      loadJAlert();
-      break;
-    case 'admin':
-      loadAdmin();
-      break;
-  }
+  runCurrentMode(true);
 }
 
-function updateFetchInput(){
+function updateFetchInput(save = true){
   const select = document.getElementById("updateMethod");
   const input = document.getElementById("fetchInterval");
-  const enabled = select.value === "fetch";
+  updateMethod = select.value;
+  const enabled = updateMethod === "fetch";
   input.disabled = !enabled;
   input.style.opacity = enabled ? "1" : "0.45";
   input.style.cursor = enabled ? "text" : "not-allowed";
+  if(save){
+    localStorage.setItem("updateMethod", updateMethod);
+  }
+  applyUpdateMethod();
+}
+function saveFetchInterval(){
+  localStorage.setItem(
+    "fetchInterval",
+    document.getElementById("fetchInterval").value
+  );
+}
+
+function formatDateTimeWithMs(date = new Date()) {
+  const y = date.getFullYear();
+  const mo = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const h = String(date.getHours()).padStart(2, "0");
+  const m = String(date.getMinutes()).padStart(2, "0");
+  const s = String(date.getSeconds()).padStart(2, "0");
+  const ms = String(date.getMilliseconds()).padStart(3, "0");
+  return `${y}/${mo}/${d} ${h}:${m}:${s}.${ms}`;
+}
+function formatHHmm(str) {
+  const match = str.match(/(\d{2}):(\d{2}):\d{2}/);
+  if (!match) return "先ほど";
+  return `${match[1]}時${match[2]}分頃`;
+}
+
+const regionOrder = [
+  "北海道","北海道道北","北海道道央","北海道道南","北海道道東","東北","青森","岩手","宮城","秋田","山形","福島",
+  "関東","茨城","栃木","群馬","埼玉","千葉","東京","神奈川","小笠原",
+  "伊豆諸島","伊豆大島","新島","神津島","三宅島","八丈島","甲信","山梨","長野", "新潟","佐渡",
+  "北陸","富山","石川","福井","東海","岐阜","静岡","愛知","三重",
+  "近畿","滋賀","京都","大阪","兵庫","奈良","和歌山","中国","鳥取","島根","岡山","広島","山口",
+  "四国","徳島","香川","愛媛","高知","九州","福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島",
+  "沖縄","沖縄本島","奄美群島","大東島","宮古島","八重山",
+];
+const AREA_ORDER = [
+  "石狩地方北部","石狩地方中部","石狩地方南部","後志地方北部","後志地方東部","後志地方西部",
+  "空知地方北部","空知地方中部","空知地方南部","渡島地方北部","渡島地方東部","渡島地方西部",
+  "檜山地方","北海道奥尻島","胆振地方西部","胆振地方中東部",
+  "日高地方西部","日高地方中部","日高地方東部","上川地方北部","上川地方中部","上川地方南部",
+  "留萌地方中北部","留萌地方南部","宗谷地方北部","宗谷地方南部","北海道利尻礼文","網走地方","北見地方","紋別地方",
+  "十勝地方北部","十勝地方中部","十勝地方南部","釧路地方北部","釧路地方中南部",
+  "根室地方北部","根室地方中部","根室地方南部",
+  "青森県津軽北部","青森県津軽南部","青森県三八上北","青森県下北",
+  "岩手県沿岸北部","岩手県沿岸南部","岩手県内陸北部","岩手県内陸南部","宮城県北部","宮城県中部","宮城県南部",
+  "秋田県沿岸北部","秋田県沿岸南部","秋田県内陸北部","秋田県内陸南部",
+  "山形県庄内","山形県最上","山形県村山","山形県置賜","福島県中通り","福島県浜通り","福島県会津",
+  "茨城県北部","茨城県南部","栃木県北部","栃木県南部","群馬県北部","群馬県南部",
+  "埼玉県北部","埼玉県南部","埼玉県秩父","千葉県北東部","千葉県北西部","千葉県南部",
+  "東京都２３区","東京都多摩東部","東京都多摩西部","伊豆大島","新島","神津島","三宅島","八丈島","小笠原",
+  "神奈川県東部","神奈川県西部","新潟県上越","新潟県中越","新潟県下越","新潟県佐渡",
+  "富山県東部","富山県西部","石川県能登","石川県加賀","福井県嶺北","福井県嶺南",
+  "山梨県東部・富士五湖","山梨県中・西部","長野県北部","長野県中部","長野県南部",
+  "岐阜県飛騨","岐阜県美濃東部","岐阜県美濃中西部","静岡県伊豆","静岡県東部","静岡県中部","静岡県西部",
+  "愛知県東部","愛知県西部","三重県北部","三重県中部","三重県南部",
+  "滋賀県北部","滋賀県南部","京都府北部","京都府南部","大阪府北部","大阪府南部",
+  "兵庫県北部","兵庫県南東部","兵庫県南西部","兵庫県淡路島","奈良県","和歌山県北部","和歌山県南部",
+  "鳥取県東部","鳥取県中部","鳥取県西部","島根県東部","島根県西部","島根県隠岐","岡山県北部","岡山県南部",
+  "広島県北部","広島県南東部","広島県南西部","山口県北部","山口県東部","山口県中部","山口県西部",
+  "徳島県北部","徳島県南部","香川県東部","香川県西部","愛媛県東予","愛媛県中予","愛媛県南予",
+  "高知県東部","高知県中部","高知県西部",
+  "福岡県福岡","福岡県北九州","福岡県筑豊","福岡県筑後","佐賀県北部","佐賀県南部",
+  "長崎県北部","長崎県南西部","長崎県島原半島","長崎県対馬","長崎県壱岐","長崎県五島",
+  "熊本県阿蘇","熊本県熊本","熊本県球磨","熊本県天草・芦北","大分県北部","大分県中部","大分県南部","大分県西部",
+  "宮崎県北部平野部","宮崎県北部山沿い","宮崎県南部平野部","宮崎県南部山沿い",
+  "鹿児島県薩摩","鹿児島県大隅","鹿児島県十島村","鹿児島県甑島","鹿児島県種子島","鹿児島県屋久島",
+  "鹿児島県奄美北部","鹿児島県奄美南部",
+  "沖縄県本島北部","沖縄県本島中南部","沖縄県久米島","沖縄県大東島",
+  "沖縄県宮古島","沖縄県石垣島","沖縄県与那国島","沖縄県西表島"
+];
+const hypoRuby = {
+  "置賜": "おきたま",
+  "秩父": "ちちぶ",
+  "神津島": "こうづしま",
+  "筑豊": "ちくほう",
+  "壱岐": "いき",
+  "球磨": "くま",
+  "天草・芦北": "あまくさ・あしきた",
+  "甑島": "こしきしま",
+  "久米島": "くめじま"
+};
+
+const areaOrderIndex = new Map(
+  AREA_ORDER.map((name, idx) => [name, idx])
+);
+function sortByAreaOrder(a, b) {
+  const ia = areaOrderIndex.has(a) ? areaOrderIndex.get(a) : Infinity;
+  const ib = areaOrderIndex.has(b) ? areaOrderIndex.get(b) : Infinity;
+  return ia - ib;
+}
+function applyHypoRuby(text){
+  for (const [key, ruby] of Object.entries(hypoRuby)) {
+    if (text.includes(key)) {
+      text = text.replaceAll(key, `${key}（${ruby}）`);
+    }
+  }
+  return text;
 }
 
 /* 緊急地震速報（警報） */
-function loadEEWWarning(){
-  setScript(`システム未完成`);
+async function loadEEWWarning(data){
+  if (isLoading) return;
+  setLoading(true);
+
+  try{
+    if (!data) {
+      const res = await safeFetch(url_loadEEWWarning);
+      if (res.ok) {
+        setFooter(`<span style="color:#00e676">●</span>正常(P2P)／最終更新 ${formatDateTimeWithMs()}`,null);
+      } else {
+        setFooter(`<span style="color:#ffb300">●</span>HTTP${res.status}エラー(P2P)／試行時刻 ${formatDateTimeWithMs()}`,null);
+        setScript(`読み込みでHTTP${res.status}エラーが発生しました。`);
+        return;
+      }
+      const json = await res.json();
+      data = json[0];
+      if (!data) {
+        setScript("緊急地震速報のデータがありません。");
+        return;
+      }
+    } else {
+      setFooter(null,`<span style="color:#00e676">●</span>正常(P2P)／受信日時 ${formatDateTimeWithMs()}`);
+    }
+
+    const eewAreas = [...new Set(data.areas.map(area => area.pref))];
+    eewAreas.sort((a, b) => {
+      const ia = regionOrder.indexOf(a);
+      const ib = regionOrder.indexOf(b);
+      return (ia === -1 ? Infinity : ia) - (ib === -1 ? Infinity : ib);
+    });
+
+    const hypo = data.earthquake.hypocenter.reduceName;
+
+    const titleText = isAppTest ? "これは試験画面です。" : `緊急地震速報　${hypo}で地震`;
+
+    setScript(`<span class="marker-red">${titleText}</span>
+緊急地震速報です。
+<div class="yellow-box">${eewAreas.join("、")}</div>では、強い揺れに警戒してください。
+
+姿勢を低くして頭を守ってください。倒れてくるものや落下物に充分注意してください。
+慌てて屋外へ飛び出したり、階段を駆け降りたりすると、転倒などによる思わぬ怪我をするおそれがあります。
+落ち着いて身の安全を確保してください。
+
+緊急地震速報です。${eewAreas.join("、")}では強い揺れに警戒してください。
+
+落ち着いて身の安全を確保してください。
+エレベーターに乗っている場合は、全ての階のボタンを押して、最寄りの階で降りてください。
+閉じ込められた場合は、無理な脱出は試みないでください。
+車を運転中の場合は、ゆっくりブレーキを踏んで路肩に停車してください。
+
+震源が海底の場合、津波が発生する可能性があります。
+大きな地震では津波警報が到達に間に合わないことがあります。
+沿岸で長く強い揺れを感じた場合は、津波情報の発表を待たずただちに高い場所へ避難してください。
+
+揺れがおさまってから火の始末をしてください。
+安全が確保できたら、テレビやラジオ、本オープンチャットなどで最新情報を確認してください。
+新しい情報が入り次第お伝えします。`);
+  } finally {
+    setLoading(false);
+  }
 }
+
 /* Wolfxの緊急地震速報 */
-function loadEEWForecast(){
-  setScript(`システム未完成`);
+async function loadEEWForecast(){
+  if (isLoading) return;
+  setLoading(true);
+
+  try{
+    const res = await safeFetch(url_loadEEWForecast);
+    if (res.ok) {
+      setFooter(`<span style="color:#00e676">●</span>正常(Wolfx)／最終更新 ${formatDateTimeWithMs()}`,null);
+    } else {
+      setFooter(`<span style="color:#ffb300">●</span>HTTP${res.status}エラー(Wolfx)／試行時刻 ${formatDateTimeWithMs()}`,null);
+      setScript(`読み込みでHTTP${res.status}エラーが発生しました。`);
+      return;
+    }
+    const eewData = await res.json();
+    if (!eewData) {
+      setScript("緊急地震速報のデータがありません。");
+      return;
+    }
+    let notice = "";
+    const int = eewData.MaxIntensity || "不明";
+    if (int==="1" || int==="2") {
+      showMessage(`推定震度3未満のEEW予報は、原則アナウンスは不要です。`);
+    } else if(int==="3") {
+      notice = "\n揺れに注意してください。";
+    } else if(int==="4") {
+      notice = "\n次の地域では、やや強い揺れに注意してください。";
+    } else if(int==="5弱" || int==="5強" || int==="6弱" || int==="6強" || int==="7") {
+      notice = "\n強い揺れに警戒してください。姿勢を低くして頭を守ってください。"
+    } else {
+      notice = "\n推定最大震度は不明です。今後の情報に注意してください。新しい情報が入り次第お伝えします。"
+      if (Number(eewData.Depth) >= 150) {
+        notice = "\n深発地震のため、最大震度の推定はありません。震源から遠く離れたところが強く揺れる可能性もありますので、念のため揺れに注意してください。"
+      }
+    }
+    const originTime = formatHHmm(eewData.OriginTime);
+
+    let hypo = eewData.Hypocenter;
+    for (const [key, ruby] of Object.entries(hypoRuby)) {
+      if (hypo.includes(key)) { hypo = hypo.replace(key, `${key}（${ruby}）`); }
+    }
+    if (eewData.isAssumption===true) {
+      if (eewData.isWarn===false && int==="5弱") {
+        const baseHypo = hypo;
+
+        hypo += ` で大きな加速度が検出されたもようです。
+${baseHypo}では大きな揺れが発生している可能性があります。
+念のため強い揺れに警戒してください。
+今後の情報に十分注意してください。`;
+      } else {
+        hypo += ` で揺れが検出されたもようです。
+推定最大震度は${int}です。${notice}`;
+      }
+    } else {
+      hypo += ` で地震が発生したもようです。
+推定最大震度は${int}です。${notice}`;
+    }
+
+    const hasMagnitude =
+      eewData.Magunitude !== undefined &&
+      eewData.Magunitude !== null &&
+      eewData.Magunitude !== "";
+    const hasDepth =
+      eewData.Depth !== undefined &&
+      eewData.Depth !== null &&
+      eewData.Depth !== "";
+
+    const magnitude = hasMagnitude ? `マグニチュード${eewData.Magunitude}` : null;
+    const depth = hasDepth ? `${eewData.Depth}` : null;
+    const isTsunami = eewData.isSea && (Number(eewData.Magnitude)>=6.0) && (Number(eewData.Depth)<=60);
+
+    let hypos = "";
+    if (!eewData.isAssumption) {
+      if (hasMagnitude && hasDepth) {
+        hypos = `\n\n震源情報です。地震の規模は${magnitude}、震源の深さは${depth}キロメートルと推定されています。`;
+      } else if (hasMagnitude) {
+        hypos = `\n\n震源情報です。地震の規模は${magnitude}と推定されています。震源の深さは不明です。`;
+      } else if (hasDepth) {
+        hypos = `\n\n震源情報です。地震の規模を示すマグニチュードは不明です。震源の深さは${depth}キロメートルと推定されています。`;
+      } else {
+        hypos = "\n\n震源情報です。地震の規模を示すマグニチュードと震源の深さはいずれも不明です。";
+      }
+    } else {
+      hypos = "\n\n震源情報です。地震の規模を示すマグニチュードと震源の深さはいずれも不明です。";
+    }
+
+    let esi = "";
+    if (eewData.WarnArea && eewData.WarnArea.length > 0) {
+      const int7  = []; const int6p = []; const int6m = [];
+      const int5p = []; const int5m = []; const int4  = [];
+      const int3  = []; const int2  = []; const int1  = [];
+      const int0  = []; // 震度不明・その他
+
+      // ▼ 対象地域（詳細）：元データ順 + 予想震度
+      for (const area of eewData.WarnArea) {
+        const shindo = area.Shindo1;
+
+        switch (shindo) {
+          case "7": int7.push(applyHypoRuby(area.Chiiki)); break;
+          case "6強": case "6+": int6p.push(applyHypoRuby(area.Chiiki)); break;
+          case "6弱": case "6-": int6m.push(applyHypoRuby(area.Chiiki)); break;
+          case "5強": case "5+": int5p.push(applyHypoRuby(area.Chiiki)); break;
+          case "5弱": case "5-": int5m.push(applyHypoRuby(area.Chiiki)); break;
+          case "4": int4.push(applyHypoRuby(area.Chiiki)); break;
+          case "3": int3.push(applyHypoRuby(area.Chiiki)); break;
+          case "2": int2.push(applyHypoRuby(area.Chiiki)); break;
+          case "1": int1.push(applyHypoRuby(area.Chiiki)); break;
+          default: int0.push(applyHypoRuby(area.Chiiki));
+        }
+      }
+
+      // ▼ ここで地域順ソート
+      int7 .sort(sortByAreaOrder);
+      int6p.sort(sortByAreaOrder);
+      int6m.sort(sortByAreaOrder);
+      int5p.sort(sortByAreaOrder);
+      int5m.sort(sortByAreaOrder);
+      int4 .sort(sortByAreaOrder);
+      int3 .sort(sortByAreaOrder);
+      int2 .sort(sortByAreaOrder);
+      int1 .sort(sortByAreaOrder);
+      int0 .sort(sortByAreaOrder);
+
+      if (int7.length)  esi += "◆推定震度7の地域は以下の通りです◆\n　" + int7.join("、") + "\n";
+      if (int6p.length) esi += "◆推定震度6強の地域は以下の通りです◆\n　" + int6p.join("、") + "\n";
+      if (int6m.length) esi += "◆推定震度6弱の地域は以下の通りです◆\n　" + int6m.join("、") + "\n";
+      if (int5p.length) esi += "◆推定震度5強の地域は以下の通りです◆\n　" + int5p.join("、") + "\n";
+      if (int5m.length) esi += "◆推定震度5弱の地域は以下の通りです◆\n　" + int5m.join("、") + "\n";
+      if (int4.length)  esi += "◆推定震度4の地域は以下の通りです◆\n　" + int4.join("、") + "\n";
+      if (int3.length)  esi += "◆推定震度3の地域は以下の通りです◆\n　" + int3.join("、") + "\n";
+      if (int2.length)  esi += "◆推定震度2の地域は以下の通りです◆\n　" + int2.join("、") + "\n";
+      if (int1.length)  esi += "◆推定震度1の地域は以下の通りです◆\n　" + int1.join("、") + "\n";
+      if (int0.length)  esi += "◆推定震度が不明な地域は以下の通りです◆\n　" + int0.join("、") + "\n";
+      esi = esi.trim();
+    }
+
+    setScript(`${esi ? `<div class="yellow-box">${esi}</div>\n` : ""}ここで地震の情報です。
+
+${originTime}、${hypo}${hypos}${isTsunami ? "また、この地震により津波が発生する可能性があります。沿岸で長く強い揺れを感じた場合は、念のため海や川から離れてください。今後の情報に十分注意してください。" : ""}`);
+  } finally {
+    setLoading(false);
+  }
 }
+
 /* 最新の地震 */
 function loadLatestQuake(){
-  setScript("システム未完成");
+  if (isLoading) return;
+  setLoading(true);
+  try {
+    setScript("システム未完成");
+  } finally {
+    setLoading(false);
+  }
 }
+
 /* 過去の地震 */
 function loadHistoryQuake(){
-  setScript("システム未完成");
+  if (isLoading) return;
+  setLoading(true);
+  try {
+    setScript("システム未完成");
+  } finally {
+    setLoading(false);
+  }
 }
-/* 津波警報等対象地域 */
-function loadTsunamiArea(){
-  setScript(`システム未完成`);
-}
+
 /* 津波到達予想時刻 */
 function loadTsunamiArrival(){
-  setScript(`システム未完成`);
+  if (isLoading) return;
+  setLoading(true);
+  try {
+    setScript("システム未完成");
+  } finally {
+    setLoading(false);
+  }
 }
+
 /* 津波観測に関する情報 */
 function loadTsunamiObs(){
-  setScript(`システム未完成`);
+  if (isLoading) return;
+  setLoading(true);
+  try {
+    setScript("システム未完成");
+  } finally {
+    setLoading(false);
+  }
 }
+
 /* Jアラート */
 function loadJAlert(){
-  setScript(`システム未完成`);
+  if (isLoading) return;
+  setLoading(true);
+  try {
+    setScript("システム未完成");
+  } finally {
+    setLoading(false);
+  }
 }
 /* 管理者原稿 */
 async function loadAdmin(){
+  if (isLoading) return;
+  setLoading(true);
+
   setScript('読み込み中...');
   try{
-    const response = await fetch('https://script.google.com/macros/s/AKfycbwSgpbpVHoZffj8P7C3maNYtpeNFPuq6BR2oYnxp8m7CPjsj0HId10U0ocrKgu51EMk/exec');
+    const response = await safeFetch(url_loadAdmin);
     const data = await response.json();
-    setScript((data.text || '原稿なし').replace(/\n/g, '<br>'));
+    setScript(data.text || "原稿なし");
   }catch(error){
     console.error(error);
     setScript('原稿の取得に失敗しました\n\n'+error);
+  } finally {
+    setLoading(false);
   }
 }
 /* 設定開く */
@@ -608,11 +1063,151 @@ function closeSettings(event){
 function forceCloseSettings(){
   document.getElementById('settingsOverlay').style.display = 'none';
 }
+
+function restoreState(){
+  // 設定取得
+  updateMethod = localStorage.getItem("updateMethod") || "fetch";
+  fetchInterval = Number(localStorage.getItem("fetchInterval") || 5);
+  autoTabSwitch = localStorage.getItem("autoTabSwitch") !== "false";
+  // UI反映
+  document.getElementById("updateMethod").value = updateMethod;
+  document.getElementById("fetchInterval").value = fetchInterval;
+  document.getElementById("autoTabSwitch").checked = autoTabSwitch;
+  // fetch UI状態更新
+  updateFetchInput(false);
+  // fetch動作復帰
+  applyUpdateMethod();
+  // WebSocket復帰
+  connectWS();
+}
+function applyUpdateMethod(){
+  if (timer) clearInterval(timer);
+
+  if (updateMethod === "fetch") {
+    fetch_setInterval();
+  }
+}
 /* 初期表示 */
-window.onload = ()=>{
-  const firstButton = document.querySelector('.menu-btn');
-  selectMenu(firstButton,'eew_warning');
+window.onload = () => {
+  restoreState();
+
+  const firstButton = document.querySelector(".menu-btn");
+  selectMenu(firstButton,"eew_warning");
 };
+
+document.getElementById("fetchInterval").addEventListener("change", () => {
+  fetchInterval = Number(document.getElementById("fetchInterval").value);
+  localStorage.setItem("fetchInterval", fetchInterval);
+  applyUpdateMethod();
+});
+document.getElementById("autoTabSwitch").addEventListener("change", () => {
+  autoTabSwitch = document.getElementById("autoTabSwitch").checked;
+  localStorage.setItem("autoTabSwitch", autoTabSwitch);
+});
+
+function fetch_setInterval() {
+  if (timer) clearInterval(timer);
+  if (updateMethod !== "fetch") return;
+  timer = setInterval(() => {
+    runCurrentMode();
+  },fetchInterval * 1000);
+}
+
+window.onerror = function(message, source, lineno, colno, error){
+  showMessage(
+    `[JSエラー]\n${message}\n${source}:${lineno}:${colno}`,
+    "#e74c3c",
+    "#fff",
+    10
+  );
+};
+
+window.addEventListener("unhandledrejection", function(event){
+  showMessage(
+    `[Promise未処理エラー]\n${event.reason}`,
+    "#e74c3c",
+    "#fff",
+    10
+  );
+});
+
+function copyToast(){
+  const el = document.getElementById("toast");
+  const text = el.dataset.text || "";
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      showMessage("トーストメッセージをコピーしました", "#2ecc71", "#000", 1.5);
+    })
+    .catch(() => {
+      showMessage("コピー失敗", "#e74c3c", "#fff", 2);
+    });
+}
+//ws処理
+let ws;
+let reconnectTimer = null;
+function connectWS() {
+  ws = new WebSocket(url_ws);
+  ws.onopen = () => {
+    console.log("WS接続");
+    setFooter(null, '<span style="color:#00e676">●</span>正常');
+    showMessage("WebSocketに接続しました。","#00c853","#fff",2);
+  };
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (!data) return;
+      if (data.code===556) {//緊急地震速報（警報）
+        if (lastEEWEventId === data.earthquake.arrivalTime) {
+          if (currentMode === 'eew_warning') {
+            loadEEWWarning(data);
+          };
+          return;
+        } else {
+          lastEEWEventId = data.earthquake.arrivalTime;
+          if (autoTabSwitch===false) {
+            if (currentMode === 'eew_warning') {
+              loadEEWWarning(data);
+            }
+            return;
+          };
+        }
+        currentMode = "eew_warning";
+        document.querySelectorAll(".menu-btn").forEach(btn => {
+          btn.classList.remove("active");
+        });
+        document.querySelector('.menu-btn[data-mode="eew_warning"]').classList.add("active");
+        document.getElementById("title").textContent = titles.eew_warning || "-";
+        document.getElementById("headerControls").innerHTML = headerControls.eew_warning || "";
+        loadEEWWarning(data);
+      }
+      if (data.code===552) {//津波予報
+        //
+      }
+    } catch (e) {
+      showMessage("[WebSocket ERROR]\n"+ e,"#e74c3c","#fff",5);
+    }
+  };
+  ws.onerror = (err) => {
+    console.error(err);
+    setFooter(null, '<span style="color:#ff5252">●</span>エラー');
+    showMessage(`WebSocket通信エラー\n${String(err)}`,"#e74c3c","#fff",5);
+  };
+  ws.onclose = () => {
+    setFooter(
+      null,
+      '<span style="color:#ffb300">●</span>切断・再接続を試行中）'
+    );
+    showMessage("WebSocketとの接続が切断されました。\n再接続します。","#ffb300","#000",3);
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(connectWS, 1500);
+  };
+}
+
+
 </script>
+<div id="toast" class="toast">
+  <span id="toastText"></span>
+  <button id="toastCopyBtn" onclick="copyToast()" title="コピー">📋</button>
+</div>
 </body>
 </html>
