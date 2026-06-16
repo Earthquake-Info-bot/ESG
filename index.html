@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="ESG">
 <link rel="apple-touch-icon" href="https://earthquake-info-bot.github.io/ESG/icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>t5[ESG]ETライブ原稿生成システム</title>
+<title>t6[ESG]ETライブ原稿生成システム</title>
 <style>
 *{
   box-sizing:border-box;
@@ -458,7 +458,7 @@ body.loading {
 </div>
 <!-- 時計 -->
 <script>
-const isAppTest = false;
+const isAppTest = true;
 
 let fetchInterval = 3;
 let updateMethod = "fetch";
@@ -495,7 +495,7 @@ function showMessage(text, bgColor="#3498db", textColor="#fff", sec=5){
   }, sec * 1000);
 }
 
-if (isAppTest) {
+if (isAppTest===true) {
   alert("製作・テスト中です。\n実際のデータは表示していません。");
   showMessage("テストデータを表示しています。", "#3498db", "#fff", 5);
 }
@@ -507,13 +507,14 @@ let lastEEWEventId = null;
 let lastTsunamiEventId = null;
 let autoTabSwitch = true;
 let isLoading = false;
+let announceDT = null;
 
 function setLoading(state, text = "読み込み中...") {
   isLoading = state;
 
   // 画面表示
   if (state) {
-    setScript(text);
+    //setScript(text);
     document.body.classList.add("loading");
   } else {
     document.body.classList.remove("loading");
@@ -572,7 +573,7 @@ let url_loadTsunamiobs = null;
 let url_loadJAlert = null;
 let url_loadAdmin = null;
 let url_ws = null;
-if (isAppTest) {
+if (isAppTest===true) {
   // テストデータ
   url_loadEEWWarning = "https://api-v2-sandbox.p2pquake.net/v2/history?codes=556&limit=1";
   url_loadEEWForecast = "https://api.wolfx.jp/jma_eew.json";
@@ -770,6 +771,13 @@ function applyHypoRuby(text){
   return text;
 }
 
+function parseDate(str) {
+  const [date, time] = str.split(" ");
+  const [y, m, d] = date.split("/").map(Number);
+  const [h, mi, s] = time.split(":").map(Number);
+  return new Date(y, m - 1, d, h, mi, s);
+}
+
 /* 緊急地震速報（警報） */
 async function loadEEWWarning(data){
   if (isLoading) return;
@@ -795,6 +803,19 @@ async function loadEEWWarning(data){
       setFooter(null,`<span style="color:#00e676">●</span>正常(P2P)／受信日時 ${formatDateTimeWithMs()}`);
     }
 
+    if (data.cancelled === true) {
+      announceDT = null;
+      setScript(`<span style="color:yellow">《重要》二重EEWの片方のみキャンセルでないかを必ず確認</span>
+
+新しい情報です。
+
+この緊急地震速報は取り消されました。
+強い揺れの心配はありません。
+
+繰り返します、緊急地震速報はキャンセルされました。`)
+      return;
+    }
+
     const eewAreas = [...new Set(data.areas.map(area => area.pref))];
     eewAreas.sort((a, b) => {
       const ia = regionOrder.indexOf(a);
@@ -806,7 +827,19 @@ async function loadEEWWarning(data){
 
     const titleText = isAppTest ? "これは試験画面です。" : `緊急地震速報　${hypo}で地震`;
 
+    announceDT = data.issue.time;
+    const elapsedSec = Math.floor(
+      (Date.now() - parseDate(data.issue.time).getTime()) / 1000
+    );
+    if (elapsedSec > 900) {
+      setScript("現在、緊急地震速報（警報）は発表されていません。\n（発表から15分以上経過したので表示終了）");
+      announceDT = null;
+      return;
+    }
+
     setScript(`<span class="marker-red">${titleText}</span>
+<span style="color:cyan">${data.issue.time} 発表（第${data.issue.serial}報）<br><span id="announce">（発表から--分--秒経過）</span></span>
+    
 緊急地震速報です。
 <div class="yellow-box">${eewAreas.join("、")}</div>では、強い揺れに警戒してください。
 
@@ -822,7 +855,7 @@ async function loadEEWWarning(data){
 車を運転中の場合は、ゆっくりブレーキを踏んで路肩に停車してください。
 
 震源が海底の場合、津波が発生する可能性があります。
-大きな地震では津波警報が到達に間に合わないことがあります。
+大きな地震では津波情報の発表が津波の到達に間に合わないことがあります。
 沿岸で長く強い揺れを感じた場合は、津波情報の発表を待たずただちに高い場所へ避難してください。
 
 揺れがおさまってから火の始末をしてください。
@@ -971,7 +1004,9 @@ ${baseHypo}では大きな揺れが発生している可能性があります。
 
     setScript(`${esi ? `<div class="yellow-box">${esi}</div>\n` : ""}ここで地震の情報です。
 
-${originTime}、${hypo}${hypos}${isTsunami ? "また、この地震により津波が発生する可能性があります。沿岸で長く強い揺れを感じた場合は、念のため海や川から離れてください。今後の情報に十分注意してください。" : ""}`);
+${originTime}、${hypo}${hypos}${isTsunami ? "また、この地震により津波が発生する可能性があります。沿岸で長く強い揺れを感じた場合は、念のため海や川から離れてください。今後の情報に十分注意してください。" : ""}
+
+<span style="font-size:16px; color:#f8f8f8">発表日時　${eewData.AnnouncedTime}</span>`);
   } finally {
     setLoading(false);
   }
@@ -1038,8 +1073,17 @@ async function loadAdmin(){
 
   setScript('読み込み中...');
   try{
-    const response = await safeFetch(url_loadAdmin);
-    const data = await response.json();
+    const res = await safeFetch(url_loadAdmin);
+
+    if (res.ok) {
+      setFooter(`<span style="color:#00e676">●</span>正常(GAS_admin)／最終更新 ${formatDateTimeWithMs()}`,null);
+    } else {
+      setFooter(`<span style="color:#ffb300">●</span>HTTP${res.status}エラー(GAS_admin)／試行時刻 ${formatDateTimeWithMs()}`,null);
+      setScript(`読み込みでHTTP${res.status}エラーが発生しました。`);
+      return;
+    }
+
+    const data = await res.json();
     setScript(data.text || "原稿なし");
   }catch(error){
     console.error(error);
@@ -1108,7 +1152,9 @@ document.getElementById("autoTabSwitch").addEventListener("change", () => {
 function fetch_setInterval() {
   if (timer) clearInterval(timer);
   if (updateMethod !== "fetch") return;
+
   timer = setInterval(() => {
+    if (currentMode === "admin") return;
     runCurrentMode();
   },fetchInterval * 1000);
 }
@@ -1146,6 +1192,10 @@ function copyToast(){
 let ws;
 let reconnectTimer = null;
 function connectWS() {
+  if (ws) {
+    ws.onclose = null;
+    ws.close();
+  }
   ws = new WebSocket(url_ws);
   ws.onopen = () => {
     console.log("WS接続");
@@ -1157,13 +1207,13 @@ function connectWS() {
       const data = JSON.parse(event.data);
       if (!data) return;
       if (data.code===556) {//緊急地震速報（警報）
-        if (lastEEWEventId === data.earthquake.arrivalTime) {
+        if (lastEEWEventId === data.issue.eventId) {
           if (currentMode === 'eew_warning') {
             loadEEWWarning(data);
           };
           return;
         } else {
-          lastEEWEventId = data.earthquake.arrivalTime;
+          lastEEWEventId = data.issue.eventId;
           if (autoTabSwitch===false) {
             if (currentMode === 'eew_warning') {
               loadEEWWarning(data);
@@ -1179,6 +1229,7 @@ function connectWS() {
         document.getElementById("title").textContent = titles.eew_warning || "-";
         document.getElementById("headerControls").innerHTML = headerControls.eew_warning || "";
         loadEEWWarning(data);
+        showMessage("緊急地震速報（警報）が発表されたため、タブを切り替えました。","#ffb300","#000",5);
       }
       if (data.code===552) {//津波予報
         //
@@ -1195,15 +1246,26 @@ function connectWS() {
   ws.onclose = () => {
     setFooter(
       null,
-      '<span style="color:#ffb300">●</span>切断・再接続を試行中）'
+      '<span style="color:#ffb300">●</span>切断・再接続を試行中'
     );
     showMessage("WebSocketとの接続が切断されました。\n再接続します。","#ffb300","#000",3);
     clearTimeout(reconnectTimer);
     reconnectTimer = setTimeout(connectWS, 1500);
   };
 }
+setInterval(() => {
+  const el = document.getElementById("announce");
+  if (!el || !announceDT) return;
 
+  const elapsedSec = Math.floor(
+    (Date.now() - parseDate(announceDT).getTime()) / 1000
+  );
 
+  const min = Math.floor(elapsedSec / 60);
+  const sec = elapsedSec % 60;
+
+  el.textContent = `（発表から${min}分${sec}秒経過）`;
+}, 1000);
 </script>
 <div id="toast" class="toast">
   <span id="toastText"></span>
