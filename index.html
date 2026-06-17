@@ -845,7 +845,7 @@ async function loadEEWWarning(data){
     setScript(`<span class="marker-red">${titleText}</span>
 <span style="color:cyan">${data.issue.time} 発表（第${data.issue.serial}報）<br><span id="announce">（発表から--分--秒経過）</span></span>
     
-緊急地震速報です。
+${data.test ? "【訓練報】" : ""}緊急地震速報です。
 <div class="yellow-box">${eewAreas.join("、")}</div>では、強い揺れに警戒してください。
 
 姿勢を低くして頭を守ってください。倒れてくるものや落下物に充分注意してください。
@@ -1007,7 +1007,11 @@ ${baseHypo}では大きな揺れが発生している可能性があります。
       esi = esi.trim();
     }
 
-    setScript(`${esi ? `<div class="yellow-box">${esi}</div>\n` : ""}ここで地震の情報です。
+    const trainingTitle = eewData.isTraining ? `<span class="marker-red">訓練報を表示しています。</span>` : "";
+    const trainingText = eewData.isTraining ? "【訓練報】" : "";
+    
+    setScript(`${trainingTitle}
+${trainingText}${esi ? `<div class="yellow-box">${esi}</div>\n` : ""}ここで地震の情報です。
 
 ${originTime}、${hypo}${hypos}${isTsunami ? "また、この地震により津波が発生する可能性があります。沿岸で長く強い揺れを感じた場合は、念のため海や川から離れてください。今後の情報に十分注意してください。" : ""}
 
