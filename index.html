@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="ESG">
 <link rel="apple-touch-icon" href="./ESG/icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>t10[ESG]ETライブ原稿生成システム</title>
+<title>t11[ESG]ETライブ原稿生成システム</title>
 <style>
 *{
   box-sizing:border-box;
@@ -829,7 +829,8 @@ async function loadEEWWarning(data){
 
     const hypo = data.earthquake.hypocenter.reduceName;
 
-    const titleText = isAppTest ? "これは試験画面です。" : `緊急地震速報　${hypo}で地震`;
+    let titleText = isAppTest ? "これは試験画面です。" : `緊急地震速報　${hypo}で地震`;
+    if (data.test===true) titleText = "訓練報を表示しています。";
 
     announceDT = data.issue.time;
     const elapsedSec = Math.floor(
