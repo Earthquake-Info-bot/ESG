@@ -2,15 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="https://earthquake-info-bot.github.io/ESG/icon.png" type="image/png">
-<link rel="manifest" href="https://earthquake-info-bot.github.io/ESG/manifest.json">
+<link rel="icon" href="icon.png" type="image/png">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#1b1b1b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="ESG">
-<link rel="apple-touch-icon" href="https://earthquake-info-bot.github.io/ESG/icon.png">
+<link rel="apple-touch-icon" href="./icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ESG - ETライブ原稿生成システム</title>
+<title>ESG - ETライブ原稿生成システム(vβ1)</title>
 <style>
 *{
   box-sizing:border-box;
@@ -1188,7 +1188,7 @@ const chihoMapOrder = [
 let cities = null;
 async function fetchCities() {
   try {
-    const res = await fetch("https://earthquake-info-bot.github.io/ESG/cities.json");
+    const res = await fetch("./cities.json");
     if (!res.ok) throw new Error(res.status);
     return await res.json();
   } catch (e) {
