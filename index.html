@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="ESG">
 <link rel="apple-touch-icon" href="./icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ESG - ETライブ原稿生成システム(vβ1)</title>
+<title>ESG - ETライブ原稿生成システム(vβ1.1.2)</title>
 <style>
 *{
   box-sizing:border-box;
@@ -1081,16 +1081,16 @@ ${baseHypo}では大きな揺れが発生している可能性があります。
     let hypos = "";
     if (!eewData.isAssumption) {
       if (hasMagnitude && hasDepth) {
-        hypos = `\n\n震源情報です。地震の規模は${magnitude}、震源の深さは${depth}キロメートルと推定されています。`;
+        hypos = `震源情報です。地震の規模は${magnitude}、震源の深さは${depth}キロメートルと推定されています。`;
       } else if (hasMagnitude) {
-        hypos = `\n\n震源情報です。地震の規模は${magnitude}と推定されています。震源の深さは不明です。`;
+        hypos = `震源情報です。地震の規模は${magnitude}と推定されています。震源の深さは不明です。`;
       } else if (hasDepth) {
-        hypos = `\n\n震源情報です。地震の規模を示すマグニチュードは不明です。震源の深さは${depth}キロメートルと推定されています。`;
+        hypos = `震源情報です。地震の規模を示すマグニチュードは不明です。震源の深さは${depth}キロメートルと推定されています。`;
       } else {
-        hypos = "\n\n震源情報です。地震の規模を示すマグニチュードと震源の深さはいずれも不明です。";
+        hypos = "震源情報です。地震の規模を示すマグニチュードと震源の深さはいずれも不明です。";
       }
     } else {
-      hypos = "\n\n震源情報です。地震の規模を示すマグニチュードと震源の深さはいずれも不明です。";
+      hypos = "震源情報です。地震の規模を示すマグニチュードと震源の深さはいずれも不明です。";
     }
 
     let esi = "";
@@ -1153,9 +1153,10 @@ ${baseHypo}では大きな揺れが発生している可能性があります。
       announceS = " #"+eewData.Serial;
     }
 
-    setScript(`${trainingTitle}${trainingText}${esi ? `<div class="yellow-box">${esi}</div>\n` : ""}ここで地震の情報です。
+    setScript(`${trainingTitle}${trainingText}ここで地震の情報です。
 
-${originTime}、${hypo}${hypos}${isTsunami ? "また、この地震により津波が発生する可能性があります。沿岸で長く強い揺れを感じた場合は、念のため海や川から離れてください。今後の情報に十分注意してください。" : ""}`,flash);
+${originTime}、${hypo}
+${esi ? `<div class="yellow-box">${esi}</div>\n` : ""}${hypos}${isTsunami ? "また、この地震により津波が発生する可能性があります。沿岸で長く強い揺れを感じた場合は、念のため海や川から離れてください。今後の情報に十分注意してください。" : ""}`,flash);
     updateAnnounceInfo();
   } finally {
     setLoading(false);
