@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="ESG">
 <link rel="apple-touch-icon" href="./icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ESG - ETライブ原稿生成システム(vβ1.1.2)</title>
+<title>ESG - ETライブ原稿生成システム(vβ1.1.3)</title>
 <style>
 *{
   box-sizing:border-box;
@@ -1377,6 +1377,8 @@ async function loadTsunamiArrival(data,flash=false){
       data = json[0];
       if (!data) {
         setScript("現在、津波情報は発表されていません。");
+        announceDT = null;
+        announceS = null;
         return;
       }
     } else {
