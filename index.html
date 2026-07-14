@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="ESG">
 <link rel="apple-touch-icon" href="./icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>[T]ESG - ETライブ原稿生成システム(vβ1.3.2)</title>
+<title>[t]ESG - ETライブ原稿生成システム(vβ1.3.3)</title>
 <style>
 *{
   box-sizing:border-box;
@@ -1100,12 +1100,12 @@ async function loadEEWWarning(data,flash=false){
     const elapsedSec = Math.floor(
       (Date.now() - parseDate(announceDT).getTime()) / 1000
     );
-    if (elapsedSec > 900) {
+    /*if (elapsedSec > 900) {
       setScript("現在、緊急地震速報（警報）は発表されていません。<br>（発表から15分以上経過したので表示終了）");
       announceDT = null;
       announceS = null;
       return;
-    }
+    }*/
 
     setScript(`<span class="marker-red">${titleText}</span>
     
