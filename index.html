@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="ESG">
 <link rel="apple-touch-icon" href="./icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>[t]ESG - ETライブ原稿生成システム(vβ1.3.1)</title>
+<title>[T]ESG - ETライブ原稿生成システム(vβ1.3.2)</title>
 <style>
 *{
   box-sizing:border-box;
@@ -1074,6 +1074,7 @@ async function loadEEWWarning(data,flash=false){
       return;
     }
 
+    const eewAreas = [...new Set(data.areas.map(area => area.pref))];
     const areaSet = new Set(eewAreas);
     for (const [region, prefs] of Object.entries(regionMap)) {
       if (prefs.every(pref => areaSet.has(pref))) {
