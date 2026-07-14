@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="ESG">
 <link rel="apple-touch-icon" href="./icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ESG - ETライブ原稿生成システム(vβ1.2.1)</title>
+<title>[t]ESG - ETライブ原稿生成システム(vβ1.3.1)</title>
 <style>
 *{
   box-sizing:border-box;
@@ -568,7 +568,7 @@ body.loading {
 </div>
 <!-- 時計 -->
 <script>
-const isAppTest = false;
+const isAppTest = true;
 
 let fetchInterval = 3;
 let updateMethod = "fetch";
@@ -865,7 +865,6 @@ function formatDT_HHmm_TM(str) {
   else if (diffDays === 2) prefix = "明後日の";
   return `${prefix}${dt.getHours()}時${String(dt.getMinutes()).padStart(2, "0")}分頃`;
 }
-
 const regionOrder = [
   "北海道","北海道道北","北海道道央","北海道道南","北海道道東","東北","青森","岩手","宮城","秋田","山形","福島",
   "関東","茨城","栃木","群馬","埼玉","千葉","東京","神奈川","小笠原",
@@ -875,6 +874,15 @@ const regionOrder = [
   "四国","徳島","香川","愛媛","高知","九州","福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島",
   "沖縄","沖縄本島","奄美群島","大東島","宮古島","八重山",
 ];
+const regionMap = {
+  "北海道地方": ["北海道道北","北海道道央","北海道道南","北海道道東"], "東北地方": ["青森","岩手","宮城","秋田","山形","福島"],
+  "関東地方": ["茨城","栃木","群馬","埼玉","千葉","東京","神奈川"], "小笠原": ["小笠原"], "伊豆諸島": ["伊豆諸島"],
+  "甲信地方": ["山梨","長野"], "北陸地方": ["富山","石川","福井"], "新潟": ["新潟"],
+  "東海地方": ["岐阜","静岡","愛知","三重"], "近畿地方": ["滋賀","京都","大阪","兵庫","奈良","和歌山"],
+  "中国地方": ["鳥取","島根","岡山","広島","山口"], "四国地方": ["徳島","香川","愛媛","高知"],
+  "九州地方": ["福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島"], "奄美群島": ["奄美群島"], 
+  "沖縄本島": ["沖縄本島"], "大東島": ["大東島"], "宮古島": ["宮古島"], "八重山": ["八重山"]
+};
 const AREA_ORDER = [
   "石狩地方北部","石狩地方中部","石狩地方南部","後志地方北部","後志地方東部","後志地方西部",
   "空知地方北部","空知地方中部","空知地方南部","渡島地方北部","渡島地方東部","渡島地方西部",
@@ -1066,8 +1074,16 @@ async function loadEEWWarning(data,flash=false){
       return;
     }
 
-    const eewAreas = [...new Set(data.areas.map(area => area.pref))];
-    eewAreas.sort((a, b) => {
+    const areaSet = new Set(eewAreas);
+    for (const [region, prefs] of Object.entries(regionMap)) {
+      if (prefs.every(pref => areaSet.has(pref))) {
+        prefs.forEach(pref => areaSet.delete(pref));
+        areaSet.add(region);
+      }
+    }
+    
+    const result = [...areaSet];
+    result.sort((a, b) => {
       const ia = regionOrder.indexOf(a);
       const ib = regionOrder.indexOf(b);
       return (ia === -1 ? Infinity : ia) - (ib === -1 ? Infinity : ib);
@@ -1093,13 +1109,13 @@ async function loadEEWWarning(data,flash=false){
     setScript(`<span class="marker-red">${titleText}</span>
     
 ${data.test ? "【訓練報】" : ""}緊急地震速報です。
-<div class="yellow-box">${eewAreas.join("、")}</div>では、強い揺れに警戒してください。
+<div class="yellow-box">${result.join("、")}</div>では、強い揺れに警戒してください。
 
 姿勢を低くして頭を守ってください。倒れてくるものや落下物に充分注意してください。
 慌てて屋外へ飛び出したり、階段を駆け降りたりすると、転倒などによる思わぬ怪我をするおそれがあります。
 落ち着いて身の安全を確保してください。
 
-緊急地震速報です。${hypo}で地震が発生した模様です。${eewAreas.join("、")}では強い揺れに警戒してください。
+緊急地震速報です。${hypo}で地震が発生した模様です。${result.join("、")}では強い揺れに警戒してください。
 
 落ち着いて身の安全を確保してください。
 エレベーターに乗っている場合は、全ての階のボタンを押して、最寄りの階で降りてください。
