@@ -2,15 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="./icon.png" type="image/png">
-<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="https://earthquake-info-bot.github.io/ESG/icon.png" type="image/png">
+<link rel="manifest" href="https://earthquake-info-bot.github.io/ESG/manifest.json">
 <meta name="theme-color" content="#1b1b1b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="ESG">
-<link rel="apple-touch-icon" href="./icon.png">
+<link rel="apple-touch-icon" href="https://earthquake-info-bot.github.io/ESG/icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ESG - ETライブ原稿生成システム(vβ1.3.4)</title>
+<title>ESG - ETライブ原稿生成システム(vβ1.8.1)</title>
 <style>
 *{
   box-sizing:border-box;
@@ -25,7 +25,10 @@ body{
   background:#1b1b1b;
   color:white;
 }
-
+select:focus {
+  outline: none;
+  box-shadow: none;
+}
 .app{
   display:flex;
   width:100%;
@@ -214,25 +217,43 @@ body{
   z-index:1000;
 }
 /* ポップアップ */
+/* ポップアップ */
 .popup{
   width:500px;
   max-width:90vw;
+  height:min(700px,90dvh);
   background:#2a2a2a;
   border:2px solid #555;
   border-radius:16px;
   overflow:hidden;
+
+  display:flex;
+  flex-direction:column;
 }
+
 /* 上 */
 .popup-header{
-  height:60px;
+  flex-shrink:0;
+  min-height:60px;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
   padding:0 18px;
+
   background:#383838;
-  font-size:22px;
-  font-weight:bold;
 }
+
+/* 中 */
+.popup-body{
+  flex:1;
+  overflow-y:auto;
+
+  padding:20px;
+  font-size:18px;
+  color:#ccc;
+}
+
 /* × */
 .popup-close{
   border:none;
@@ -241,12 +262,7 @@ body{
   font-size:28px;
   cursor:pointer;
 }
-/* 中 */
-.popup-body{
-  padding:20px;
-  font-size:18px;
-  color:#ccc;
-}
+
 .toast{
   position: fixed;
   left: 14px;
@@ -402,6 +418,12 @@ body.loading {
 .s6w { background: rgb(255,40,0); color: white; }
 .s6s { background: rgb(165,0,33); color: white; }
 .s7 { background: rgb(180,0,104); color: white; }
+
+#historyQuakeSelect {
+  width: 100%;
+  font-size: 16px;
+  padding: 6px 8px;
+}
 </style>
 </head>
 <body>
@@ -481,8 +503,15 @@ body.loading {
   <div class="popup">
     <div class="popup-header">
       <div>
-        設定
+        <div style="font-size:24px;font-weight:700;line-height:1;">
+          設定
+        </div>
+        <div style="font-size:13px;color:#cfcfcf;margin-top:4px;">
+          ESG - ETライブ原稿生成システム
+          <span style="color:#9e9e9e;">vβ1.8.1</span>
+        </div>
       </div>
+
       <button class="popup-close" onclick="forceCloseSettings()">
         ×
       </button>
@@ -529,7 +558,7 @@ body.loading {
 
         <label style="display:flex;align-items:center;gap:10px;font-size:16px;">
           <input type="checkbox" id="autoTabSwitch">
-          緊急地震速報（警報）初報や津波情報発表時に自動でタブを切り替える
+          緊急地震速報（警報）や津波情報発表時に自動でタブを切り替える
         </label>
 
       </div>
@@ -696,12 +725,13 @@ if (isAppTest===true) {
   //url_loadEEWForecast = "https://script.google.com/macros/s/AKfycbzgP8R7vowRFrefHbUIkAcGt4NFjJZcuVnnpVqIjpprlCA44PtTk7ffHs-f4HP8Yk8A/exec";
   url_loadLatestQuake = "https://api-v2-sandbox.p2pquake.net/v2/history?codes=551&limit=1";
   //url_loadLatestQuake = "https://api.p2pquake.net/v2/jma/quake?limit=1&quake_type=DetailScale&min_scale=70";
-  url_loadhistoryQuake = "https://api.p2pquake.net/v2/jma/quake?limit=60&quake_type=DetailScale";
+  url_loadhistoryQuake = "https://api.p2pquake.net/v2/history?codes=551&limit=91";
+
   //url_loadTsunamiArrival_p2p = "https://api-v2-sandbox.p2pquake.net/v2/history?codes=552&limit=1";
   url_loadTsunamiArrival_p2p = "https://api.p2pquake.net/v2/jma/tsunami?limit=1&order=1&since_date=20231231";
   url_loadTsunamiArrival_jma = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
   url_loadTsunamiobs = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
-  url_loadJAlert = null;//APIなし
+  url_loadJAlert = "https://script.google.com/macros/s/AKfycbyHy59ufW9L5sy9FjZY0wWATw4gwhbrKhqHgfNHgzEEF7kP8t1d74K8dyJeEmnYY-6CPg/exec";
   url_loadAdmin = "https://script.google.com/macros/s/AKfycbwSgpbpVHoZffj8P7C3maNYtpeNFPuq6BR2oYnxp8m7CPjsj0HId10U0ocrKgu51EMk/exec";
   url_ws = "wss://api-realtime-sandbox.p2pquake.net/v2/ws";
 } else {
@@ -709,11 +739,12 @@ if (isAppTest===true) {
   url_loadEEWWarning = "https://api.p2pquake.net/v2/history?codes=556&limit=1";
   url_loadEEWForecast = "https://api.wolfx.jp/jma_eew.json";
   url_loadLatestQuake = "https://api.p2pquake.net/v2/history?codes=551&limit=1";
-  url_loadhistoryQuake = "https://api.p2pquake.net/v2/jma/quake?limit=60&quake_type=DetailScale";
+  url_loadhistoryQuake = "https://api.p2pquake.net/v2/history?codes=551&limit=91";
+
   url_loadTsunamiArrival_p2p = "https://api.p2pquake.net/v2/history?codes=552&limit=1";
   url_loadTsunamiArrival_jma = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
   url_loadTsunamiobs = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
-  url_loadJAlert = null;//APIなし
+  url_loadJAlert = "https://script.google.com/macros/s/AKfycbyHy59ufW9L5sy9FjZY0wWATw4gwhbrKhqHgfNHgzEEF7kP8t1d74K8dyJeEmnYY-6CPg/exec";
   url_loadAdmin = "https://script.google.com/macros/s/AKfycbwSgpbpVHoZffj8P7C3maNYtpeNFPuq6BR2oYnxp8m7CPjsj0HId10U0ocrKgu51EMk/exec";
   url_ws = "wss://api.p2pquake.net/v2/ws";
 }
@@ -753,12 +784,13 @@ const headerControls = {
   eew_warning: `<div id="announceInfo"></div>`,
   eew_forecast: `<div id="announceInfo"></div>`,
   latest_quake: `<div id="announceInfo"></div>`,
-  history_quake: ``,
+  history_quake: `<select id="historyQuakeSelect" style=""></select>`,
   tsunami_arrival: `<div id="announceInfo"></div>`,
   tsunami_obs: `<div id="announceInfo"></div>`,
   jalert: ``,
   admin: ``
 };
+
 function triggerFlash() {
   const el = document.getElementById("headerControls");
   if (!el) return;
@@ -848,6 +880,33 @@ function formatDT_yyyyMMddHHmmssSSS(date = new Date()) {
   const ms = String(date.getMilliseconds()).padStart(3, "0");
   return `${y}/${mo}/${d} ${h}:${m}:${s}.${ms}`;
 }
+function formatDT_yyyyMMddHHmm(date = new Date()) {
+  if (typeof date === "string") {
+    const m = date.match(
+      /(\d{4})\/(\d{2})\/(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?/
+    );
+    if (m) {
+      date = new Date(
+        Number(m[1]),
+        Number(m[2]) - 1,
+        Number(m[3]),
+        Number(m[4]),
+        Number(m[5]),
+        Number(m[6]),
+        Number((m[7] || "0").padEnd(3, "0"))
+      );
+    } else {
+      date = new Date(date);
+    }
+  }
+  const y = date.getFullYear();
+  const mo = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const h = String(date.getHours()).padStart(2, "0");
+  const m = String(date.getMinutes()).padStart(2, "0");
+  const s = String(date.getSeconds()).padStart(2, "0");
+  return `${y}年${mo}月${d}日${h}時${m}分`;
+}
 function formatDT_HHmm(str) {
   const match = str.match(/(\d{2}):(\d{2}):\d{2}/);
   if (!match) return "先ほど";
@@ -865,24 +924,16 @@ function formatDT_HHmm_TM(str) {
   else if (diffDays === 2) prefix = "明後日の";
   return `${prefix}${dt.getHours()}時${String(dt.getMinutes()).padStart(2, "0")}分頃`;
 }
+
 const regionOrder = [
-  "北海道地方","北海道道北","北海道道央","北海道道南","北海道道東","東北地方","青森","岩手","宮城","秋田","山形","福島",
-  "関東地方","茨城","栃木","群馬","埼玉","千葉","東京","神奈川","小笠原",
-  "伊豆諸島","伊豆大島","新島","神津島","三宅島","八丈島","甲信地方","山梨","長野", "新潟","佐渡",
-  "北陸地方","富山","石川","福井","東海地方","岐阜","静岡","愛知","三重",
-  "近畿地方","滋賀","京都","大阪","兵庫","奈良","和歌山","中国地方","鳥取","島根","岡山","広島","山口",
-  "四国地方","徳島","香川","愛媛","高知","九州地方","福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島",
+  "北海道","北海道道北","北海道道央","北海道道南","北海道道東","東北","青森","岩手","宮城","秋田","山形","福島",
+  "関東","茨城","栃木","群馬","埼玉","千葉","東京","神奈川","小笠原",
+  "伊豆諸島","伊豆大島","新島","神津島","三宅島","八丈島","甲信","山梨","長野", "新潟","佐渡",
+  "北陸","富山","石川","福井","東海","岐阜","静岡","愛知","三重",
+  "近畿","滋賀","京都","大阪","兵庫","奈良","和歌山","中国","鳥取","島根","岡山","広島","山口",
+  "四国","徳島","香川","愛媛","高知","九州","福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島",
   "沖縄","沖縄本島","奄美群島","大東島","宮古島","八重山",
 ];
-const regionMap = {
-  "北海道地方": ["北海道道北","北海道道央","北海道道南","北海道道東"], "東北地方": ["青森","岩手","宮城","秋田","山形","福島"],
-  "関東地方": ["茨城","栃木","群馬","埼玉","千葉","東京","神奈川"], "小笠原": ["小笠原"], "伊豆諸島": ["伊豆諸島"],
-  "甲信地方": ["山梨","長野"], "北陸地方": ["富山","石川","福井"], "新潟": ["新潟"],
-  "東海地方": ["岐阜","静岡","愛知","三重"], "近畿地方": ["滋賀","京都","大阪","兵庫","奈良","和歌山"],
-  "中国地方": ["鳥取","島根","岡山","広島","山口"], "四国地方": ["徳島","香川","愛媛","高知"],
-  "九州地方": ["福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島"], "奄美群島": ["奄美群島"], 
-  "沖縄本島": ["沖縄本島"], "大東島": ["大東島"], "宮古島": ["宮古島"], "八重山": ["八重山"]
-};
 const AREA_ORDER = [
   "石狩地方北部","石狩地方中部","石狩地方南部","後志地方北部","後志地方東部","後志地方西部",
   "空知地方北部","空知地方中部","空知地方南部","渡島地方北部","渡島地方東部","渡島地方西部",
@@ -999,17 +1050,18 @@ function formatDT_MMddHHmm(str) {
   return (
     (d.getMonth() + 1) + "月" +
     d.getDate() + "日" +
-    d.getHours() + ":" +
-    String(d.getMinutes()).padStart(2, "0")
+    String(d.getHours()).padStart(2,"0") + ":" +
+    String(d.getMinutes()).padStart(2,"0")
   );
 }
 
-function formatDT_ddHHmm(str) {
+function formatDT_MdHmm(str) {
   const d = new Date(str);
   return (
-    String(d.getDate()).padStart(2, "0") + "日" +
-    String(d.getHours()).padStart(2, "0") + ":" +
-    String(d.getMinutes()).padStart(2, "0") + "頃"
+    (d.getMonth() + 1) + "/" +
+    String(d.getDate()) + " " +
+    String(d.getHours()) + ":" +
+    String(d.getMinutes()).padStart(2, "0")
   );
 }
 
@@ -1075,16 +1127,7 @@ async function loadEEWWarning(data,flash=false){
     }
 
     const eewAreas = [...new Set(data.areas.map(area => area.pref))];
-    const areaSet = new Set(eewAreas);
-    for (const [region, prefs] of Object.entries(regionMap)) {
-      if (prefs.every(pref => areaSet.has(pref))) {
-        prefs.forEach(pref => areaSet.delete(pref));
-        areaSet.add(region);
-      }
-    }
-    
-    const result = [...areaSet];
-    result.sort((a, b) => {
+    eewAreas.sort((a, b) => {
       const ia = regionOrder.indexOf(a);
       const ib = regionOrder.indexOf(b);
       return (ia === -1 ? Infinity : ia) - (ib === -1 ? Infinity : ib);
@@ -1110,13 +1153,13 @@ async function loadEEWWarning(data,flash=false){
     setScript(`<span class="marker-red">${titleText}</span>
     
 ${data.test ? "【訓練報】" : ""}緊急地震速報です。
-<div class="yellow-box">${result.join("、")}</div>では、強い揺れに警戒してください。
+<div class="yellow-box">${eewAreas.join("、")}</div>では、強い揺れに警戒してください。
 
 姿勢を低くして頭を守ってください。倒れてくるものや落下物に充分注意してください。
 慌てて屋外へ飛び出したり、階段を駆け降りたりすると、転倒などによる思わぬ怪我をするおそれがあります。
 落ち着いて身の安全を確保してください。
 
-緊急地震速報です。${hypo}で地震が発生した模様です。${result.join("、")}では強い揺れに警戒してください。
+緊急地震速報です。${hypo}で地震が発生した模様です。${eewAreas.join("、")}では強い揺れに警戒してください。
 
 落ち着いて身の安全を確保してください。
 エレベーターに乗っている場合は、全ての階のボタンを押して、最寄りの階で降りてください。
@@ -1315,7 +1358,7 @@ const chihoMapOrder = [
 let cities = null;
 async function fetchCities() {
   try {
-    const res = await fetch("./cities.json");
+    const res = await fetch("https://earthquake-info-bot.github.io/ESG/cities.json");
     if (!res.ok) throw new Error(res.status);
     return await res.json();
   } catch (e) {
@@ -1323,7 +1366,6 @@ async function fetchCities() {
     return {};
   }
 }
-
 function scaleToText(scale) {
   if (scale == null || scale < 0) return "不明";
   const map = {
@@ -1473,6 +1515,36 @@ function buildIntensityTable(points) {
 
   return html;
 }
+function buildTsunamiText(domestic, foreign) {
+  const d = domestic;
+  const f = foreign;
+  if (d==="Warning" || d==="Watch") return "津波に関する情報を発表しています。";
+  if (d==="NonEffective") return "日本の沿岸では若干の海面変動が予想されますが、被害の心配はありません。";
+  if (d==="None") {
+    if (f==="Checking") {
+      return "この地震による国内での津波の心配はありません。海外での津波の有無は調査中です。";
+    } else if (f==="NonEffectiveNearby") {
+      return "この地震による国内での津波の心配はありませんが、震源の近傍で小さな津波の可能性があります。";
+    } else if (f==="WarningNearby") {
+      return "この地震による国内での津波の心配はありませんが、震源の近傍で津波の可能性があります。";
+    } else if (f==="WarningPacific") {
+      return "この地震による国内での津波の心配はありませんが、太平洋で津波の可能性があります。";
+    } else if (f==="WarningPacificWide") {
+      return "この地震による国内での津波の心配はありませんが、太平洋の広域で津波の可能性があります。";
+    } else if (f==="WarningIndian") {
+      return "この地震による国内での津波の心配はありませんが、インド洋で津波の可能性があります。";
+    } else if (f==="WarningIndianWide") {
+      return "この地震による国内での津波の心配はありませんが、インド洋の広域で津波の可能性があります。";
+    } else if (f==="Potential") {
+      return "この地震による国内での津波の心配はありません。海外では津波が発生する可能性がありますが、詳細は不明です。";
+    } else {
+      return "この地震による津波の心配はありません。";
+    }
+  }
+  if (d==="Checking") return "この地震による津波の有無を現在調査中です。";
+  if (d==="Unknown") return "この地震による津波の有無は不明です。";
+  return "#Tsunami:Error!";
+}
 
 /* 最新の地震 */
 async function loadLatestQuake(data=null,flash=false){
@@ -1557,20 +1629,7 @@ ${formatDT_HHmm(data.earthquake.time)}、${areas[data.earthquake.maxScale].join(
 ${areaScales}`.replaceAll("\n","<br>")+buildIntensityTable(data.points);
     } else if (type === "Destination") {
       const hypo = data.earthquake.hypocenter.name;
-      let tsunamiText = "";
-      switch (data.earthquake.domesticTsunami) {
-        case "None":
-          tsunamiText = "この地震による津波の心配はありません。";
-          break;
-        case "NonEffective":
-          tsunamiText = "この地震により日本の沿岸では若干の海面変動があるかもしれませんが、被害の心配はありません。";
-          break;
-        case "Checking":
-          tsunamiText = "この地震による津波の有無は、現在調査中です。";
-          break;
-        default:
-          tsunamiText = "この地震による津波の有無は、現在わかっていません。";
-      }
+      const tsunamiText = buildTsunamiText(data.earthquake.domesticTsunami,data.earthquake.foreinTsunami);
       let depth = data.earthquake.hypocenter.depth;
       if (depth===0) depth = "ごく浅い";
       else if (depth===-1) depth = "不明";
@@ -1584,24 +1643,7 @@ ${formatDT_HHmm(data.earthquake.time)}、${hypo}で地震が発生しました�
 震源の深さは${depth}、地震の規模を示すマグニチュードは${magnitude}と推定されています。`.replaceAll("\n","<br>");
     } else {
       const hypo = data.earthquake.hypocenter.name;
-      let tsunamiText = "";
-      switch (data.earthquake.domesticTsunami) {
-        case "None":
-          tsunamiText = "この地震による津波の心配はありません。";
-          break;
-        case "NonEffective":
-          tsunamiText = "この地震により日本の沿岸では若干の海面変動があるかもしれませんが、被害の心配はありません。";
-          break;
-        case "Checking":
-          tsunamiText = "この地震による津波の有無は、現在調査中です。";
-          break;
-        case "Watch":
-        case "Warning":
-          tsunamiText = "この地震により、津波の情報を発表しています。";
-          break;
-        default:
-          tsunamiText = "この地震による津波の有無は、現在わかっていません。";
-      }
+      const tsunamiText = buildTsunamiText(data.earthquake.domesticTsunami,data.earthquake.foreinTsunami);
       let depth = data.earthquake.hypocenter.depth;
       if (depth===0) depth = "ごく浅い";
       else if (depth===-1) depth = "不明";
@@ -1624,11 +1666,89 @@ ${tsunamiText}`.replaceAll("\n","<br>")+buildIntensityTable(data.points);
 }
 
 /* 過去の地震 */
-function loadHistoryQuake(){
+async function loadHistoryQuake(){
   if (isLoading) return;
   setLoading(true);
-  try {
-    setScript("システム未完成".replaceAll("\n","<br>"));
+
+  try{
+    const res = await safeFetch(url_loadhistoryQuake);
+    if (res.ok) {
+      setFooter(`<span style="color:#00e676">●</span>正常(P2P)／最終更新 ${formatDT_yyyyMMddHHmmssSSS()}`,null);
+    } else {
+      setFooter(`<span style="color:#ffb300">●</span>HTTP${res.status}エラー(P2P)／試行時刻 ${formatDT_yyyyMMddHHmmssSSS()}`,null);
+      setScript(`読み込みでHTTP${res.status}エラーが発生しました。`);
+      return;
+    }
+
+    const datas = await res.json();
+    if (!datas || !datas.length) {
+      setScript("過去の地震情報はありません。");
+      return;
+    }
+
+    const select = document.getElementById("historyQuakeSelect");
+    select.innerHTML = datas.map((data, i) => {
+      let typeText = "";
+      switch (data.issue.type) {
+        case "ScalePrompt": typeText = "【震度】"; break;
+        case "Destination": typeText = "【震源】"; break;
+        case "ScaleAndDestination": typeText = "【震度・震源】"; break;
+        case "DetailScale": typeText = ""; break;
+        case "Foreign": typeText = "【遠地】"; break;
+        case "Other": typeText = "【その他】"; break;
+        default: typeText = ""; break;
+      }
+      let maxInt = scaleToText(data.earthquake.maxScale);
+      if (maxInt !== "不明") {
+        maxInt = `[${maxInt}]`;
+      } else {
+        maxInt = "";
+      }
+      const hypo = data.earthquake.hypocenter?.name || "--";
+
+      return `<option value="${i}">${typeText}${maxInt}${hypo}(${formatDT_MdHmm(data.earthquake.time)})</option>`;
+    }).join("");
+
+    function render(index){
+      const data = datas[index];
+
+      let typeText = "";
+      switch (data.issue.type) {
+        case "ScalePrompt": typeText = "震度速報"; break;
+        case "Destination": typeText = "震源速報"; break;
+        case "ScaleAndDestination": typeText = "震度・震源速報"; break;
+        case "DetailScale": typeText = "各地の震度に関する情報"; break;
+        case "Foreign": typeText = "遠地地震に関する情報"; break;
+        case "Other": typeText = "その他の情報"; break;
+        default: typeText = "不明な情報"; break;
+      }
+      let magnitude = data.earthquake.hypocenter.magnitude ?? "--";
+      if (magnitude===-1) magnitude = "--";
+      let depth = data.earthquake.hypocenter.depth ?? "--";
+      if (depth===0) depth = "ごく浅い";
+      else if (depth===-1) depth = "--";
+      else depth += "ｋｍ"
+      let maxInt = p2pToShido[data.earthquake.maxScale] ?? "--";
+      if (maxInt==="不明") maxInt = "--";
+
+      const message = `［${typeText}］
+　発生時刻：${formatDT_yyyyMMddHHmm(data.earthquake.time)}頃
+　　震源地：${data.earthquake.hypocenter?.name ?? "--"}
+　最大震度：${maxInt}
+地震の規模：Ｍ${magnitude}
+震源の深さ：${depth}
+${buildTsunamiText(data.earthquake.domesticTsunami,data.earthquake.foreinTsunami)}${data.comments.freeFormComment ? "\n\n"+data.comments.freeFormComment : ""}`.replaceAll("\n","<br>").trim()+(data.points ? buildIntensityTable(data.points) : "");
+
+      setScript(toFullWidth(message));
+    }
+
+    select.onchange = () => {
+      render(Number(select.value));
+    };
+
+    select.selectedIndex = 1;
+    render(1);
+
   } finally {
     setLoading(false);
   }
@@ -1789,13 +1909,41 @@ function loadTsunamiObs(flash=false){
 }
 
 /* Jアラート */
-function loadJAlert(flash=false){
+async function loadJAlert(data = null, flash = false){
   if (isLoading) return;
   setLoading(true);
-  try {
-    setScript("システム未完成".replaceAll("\n","<br>"),flash);
+
+  try{
+    const res = await safeFetch(url_loadJAlert);
+
+    if (res.ok) {
+      setFooter(`<span style="color:#00e676">●</span>正常(GAS_JAlert)／最終更新 ${formatDT_yyyyMMddHHmmssSSS()}`, null);
+    } else {
+      setFooter(`<span style="color:#ffb300">●</span>HTTP${res.status}エラー(GAS_JAlert)／試行時刻 ${formatDT_yyyyMMddHHmmssSSS()}`, null);
+      setScript(`読み込みでHTTP${res.status}エラーが発生しました。`);
+      return;
+    }
+
+    const data = res.json();
+    if (data.isSuccess===false) {
+      setScript("データの読み込みに失敗しました。")
+    }
+
+    setScript(
+      toFullWidth(bodyText)
+        .replaceAll("\n","<br>"),
+      flash
+    );
+
+    updateAnnounceInfo();
+
   } finally {
     setLoading(false);
+  }
+
+  function formatArea(area){
+    if(!area) return "";
+    return area.replace(/\s*\n\s*/g,"　").trim();
   }
 }
 /* 管理者原稿 */
@@ -1843,7 +1991,7 @@ function forceCloseSettings(){
 function restoreState(){
   // 設定取得
   updateMethod = localStorage.getItem("updateMethod") || "fetch";
-  fetchInterval = Number(localStorage.getItem("fetchInterval") || 5);
+  fetchInterval = Math.max(1, Number(localStorage.getItem("fetchInterval")) || fetchInterval);
   autoTabSwitch = localStorage.getItem("autoTabSwitch") !== "false";
   scrollTopOnChange = localStorage.getItem("scrollTopOnChange") !== "false";
   // UI反映
@@ -1876,6 +2024,10 @@ window.onload = async () => {
 
 document.getElementById("fetchInterval").addEventListener("change", () => {
   fetchInterval = Number(document.getElementById("fetchInterval").value);
+  if (!Number.isFinite(fetchInterval) || fetchInterval < 1) {
+    fetchInterval = 1;
+    document.getElementById("fetchInterval").value = 1;
+  }
   localStorage.setItem("fetchInterval", fetchInterval);
   applyUpdateMethod();
 });
@@ -1894,6 +2046,7 @@ function fetch_setInterval() {
 
   timer = setInterval(() => {
     if (currentMode === "admin") return;
+    if (currentMode === "history_quake") return;
     runCurrentMode(false,true);
   },fetchInterval * 1000);
 }
